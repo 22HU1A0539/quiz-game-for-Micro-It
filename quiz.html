@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Master</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+
+  background: 
+    url('logo.jpg') no-repeat center center fixed;
+  background-size: cover;
+  overflow: hidden;
+}
+
+
+        h1 {
+            font-size: 3em;
+            margin-top: 40px;
+            text-shadow: 2px 2px #000;
+            animation: fadeInDown 1s ease;
+        }
+
+        .quiz-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .quiz-container h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .option {
+            background-color: #333;
+            margin: 10px 0;
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .option:hover {
+            background-color: #444;
+            transform: scale(1.02);
+        }
+
+        .option.correct {
+            border: 2px solid #00e676;
+            background-color: #2e7d32;
+        }
+
+        .option.incorrect {
+            border: 2px solid #ff1744;
+            background-color: #b71c1c;
+        }
+.nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 600px;
+    margin-top: 25px;
+}
+
+        .nav-buttons button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(to bottom,#eceae4, #94d1f5);
+            color: #333;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .nav-buttons button:hover {
+            background: linear-gradient(to bottom,#eceae4, #63b1df);
+            transform: scale(1.05);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+    <h1>🌟 Quiz Master</h1>
+    <div class="quiz-wrapper">
+        <div class="quiz-container" id="quiz-container"></div>
+        <div class="nav-buttons">
+            <button id="prevBtn" onclick="prevQuestion()">⏪ Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()">Next ⏩</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { question: "What is the capital of France?", options: ["Berlin", "London", "Paris", "Madrid"], answer: "Paris" },
+            { question: "Which planet is known as the Red Planet?", options: ["Earth", "Mars", "Jupiter", "Venus"], answer: "Mars" },
+            { question: "Who wrote 'To be, or not to be'?", options: ["Marlowe", "Shakespeare", "Chaucer", "Wordsworth"], answer: "Shakespeare" },
+            { question: "What is the largest ocean on Earth?", options: ["Atlantic", "Indian", "Arctic", "Pacific"], answer: "Pacific" }
+        ];
+
+        let currentQuestionIndex = 0;
+        let selectedAnswers = new Array(questions.length).fill(null);
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            selectedAnswers.fill(null);
+            showQuestion();
+        }
+
+        function showQuestion() {
+        const container = document.getElementById("quiz-container");
+        container.innerHTML = "";
+        const q = questions[currentQuestionIndex];
+
+        const qDiv = document.createElement("div");
+        qDiv.innerHTML = `<h3>${q.question}</h3>`;
+
+        q.options.forEach(opt => {
+            const div = document.createElement("div");
+            div.className = "option";
+            div.innerText = opt;
+
+            // Show correct/incorrect styling
+            if (selectedAnswers[currentQuestionIndex]) {
+            if (opt === q.answer) {
+                div.classList.add("correct");
+
+            const checkSVG = `<svg style="float:right; width:18px; height:18px;" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20.285 6.709a1 1 0 00-1.414-1.418l-9.192 9.208-4.192-4.206a1 1 0 00-1.414 1.416l4.899 4.914a1 1 0 001.414 0l10.899-10.914z"/>
+            </svg>`;
+
+            div.innerHTML = `${opt} ${checkSVG}`;
+            } else if (opt === selectedAnswers[currentQuestionIndex]) {
+                div.classList.add("incorrect");
+                      div.innerHTML = opt + ' <span style="float:right; color: #ff1744; font-weight: bold;">❌</span>';
+
+            }
+            // Disable pointer events (lock selection)
+            div.style.pointerEvents = 'none';
+            } else {
+            // If not answered yet, allow clicking
+            div.onclick = () => {
+                selectedAnswers[currentQuestionIndex] = opt;
+                showQuestion(); // Re-render to show styles and lock selection
+            };
+            }
+
+            qDiv.appendChild(div);
+        });
+
+        container.appendChild(qDiv);
+        updateButtons();
+        }
+function updateButtons() {
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const navContainer = document.querySelector(".nav-buttons"); // ✅ Add this line
+
+    if (currentQuestionIndex === 0) {
+        prevBtn.style.display = "none";
+        navContainer.style.justifyContent = "flex-end"; // Align Next to right
+    } else {
+        prevBtn.style.display = "inline-block";
+        navContainer.style.justifyContent = "space-between"; // Reset layout
+    }
+
+    if (currentQuestionIndex === questions.length - 1) {
+        nextBtn.innerText = "🎯 Submit";
+        nextBtn.onclick = submitQuiz;
+    } else {
+        nextBtn.innerText = "Next ⏩";
+        nextBtn.onclick = nextQuestion;
+    }
+}
+
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                showQuestion();
+            }
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            questions.forEach((q, idx) => {
+                if (selectedAnswers[idx] === q.answer) score++;
+            });
+
+            Swal.fire({
+                title: '🎉 Quiz Completed!',
+                text: `Your Final Score is: ${score}/${questions.length}`,
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonText: 'OK',
+                cancelButtonText: '🔁 Retake',
+                background: '#222',
+                color: '#fff',
+                confirmButtonColor: '#f8b500',
+                cancelButtonColor: '#ff8b71'
+            }).then((result) => {
+                if (result.isDismissed) {
+                    startQuiz();
+                } else {
+               Swal.fire({
+    title: '📊 Your Score',
+    html: `<h2 style="color: #fceabb;">${score}/${questions.length}</h2>
+       <button onclick="Swal.close(); startQuiz()" style="
+         margin-top: 15px;
+         padding: 10px 20px;
+         border: none;
+         border-radius: 30px;
+         background: linear-gradient(135deg, #ffcf71, #ff8b71);
+         color: #222;
+         font-weight: bold;
+         cursor: pointer;
+         box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+       ">🔁 Retake Quiz</button>`,
+    showConfirmButton: false,
+    background: '#222',
+    color: '#fff'
+});
+
+                }
+            });
+        }
+
+        startQuiz();
+    </script>
+</body>
+
+</html>
